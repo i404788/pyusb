@@ -729,7 +729,7 @@ class _LibUSB(usb.backend.IBackend):
         self.lib = lib
         self.ctx = c_void_p()
         if os.environ['WEAK_AUTHORIY']:
-            _check(self.lib.libusb_set_option(byref(self.ctx), LIB_USB_WEAK_AUTHORITY))
+            _check(self.lib.libusb_set_option(self.ctx, LIB_USB_WEAK_AUTHORITY))
         _check(self.lib.libusb_init(byref(self.ctx)))
 
     @methodtrace(_logger)
