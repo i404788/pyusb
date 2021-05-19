@@ -16,6 +16,7 @@
 from ctypes import *
 import usb.util
 import sys
+import os
 import logging
 from usb._debug import methodtrace
 import usb._interop as _interop
@@ -55,6 +56,10 @@ __all__ = [
 _logger = logging.getLogger('usb.backend.libusb1')
 
 # libusb.h
+
+# pre_init options
+# Assume weak authority
+LIB_USB_WEAK_AUTHORITY = 2
 
 # transfer_type codes
 # Control endpoint
@@ -281,6 +286,9 @@ def _setup_prototypes(lib):
 
     # int libusb_init (libusb_context **context)
     lib.libusb_init.argtypes = [POINTER(c_void_p)]
+            
+    # int libusb_set_option(libusb_context *context, int option)
+    lib.libusb_set_option.argtypes = [POINTER(c_void_p), c_int]
 
     # void libusb_exit (struct libusb_context *ctx)
     lib.libusb_exit.argtypes = [c_void_p]
@@ -720,6 +728,8 @@ class _LibUSB(usb.backend.IBackend):
         usb.backend.IBackend.__init__(self)
         self.lib = lib
         self.ctx = c_void_p()
+        if os.environ['WEAK_AUTHORIY']:
+            _check(self.lib.libusb_set_option(byref(self.ctx), LIB_USB_WEAK_AUTHORITY))
         _check(self.lib.libusb_init(byref(self.ctx)))
 
     @methodtrace(_logger)
